@@ -1,33 +1,80 @@
 import { useState, useEffect } from 'react'
-import {FaSignInAlt, FaUser} from 'react-icons/fa'
+import {FaSignInAlt} from 'react-icons/fa'
+
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import Spinner from '../components/Spinner'
+
+/*
+import {ToastContainer} from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+*/
+//do above steps and toastContainer in app.js
+//for this to work
+import { toast } from  'react-toastify'
+import {login, reset} from '../features/auth/authSlice'
+
 
 
 function Login() {
 
-const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+        
 
-})
+    })
 
 
-const { email, password } = formData
+    const { email, password } = formData
 
-const onChange = (e) => {
-    //here the curly braces are put inside parenthesis 
-    //since setFormData returns an object
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
 
-    setFormData((prevState) => ({
-        ...prevState,
-        [e.target.name]: e.target.value,
-        }))
-}
+    const {user, isLoading, isError, isSuccess, message} = useSelector(
+        (state) => state.auth
+    )
 
-const onSubmit = (e) => {
-    e.preventDefault()
-    
-}
+    useEffect(() => {
+        if(isError) {
+            toast.error(message)
+        }
+
+        if(isSuccess || user) {
+            navigate('/')
+        }
+
+        dispatch(reset())
+
+
+    }, [user, isError, isSuccess, message, navigate, dispatch])
+
+
+    const onChange = (e) => {
+        //here the curly braces are put inside parenthesis 
+        //since setFormData returns an object
+
+        setFormData((prevState) => ({
+            ...prevState,
+            [e.target.name]: e.target.value,
+            }))
+    }
+
+    const onSubmit = (e) => {
+        e.preventDefault()
+
+        const userData = {
+            email,
+            password,
+        }
+
+        dispatch(login(userData))
+        
+    }
+
+    if (isLoading) {
+        return <Spinner />
+    }
 
   return (
     //the 'name' inside input tag is used
@@ -54,7 +101,7 @@ const onSubmit = (e) => {
         
             
                 <div className='form-control'>
-                <input type='text' className='form-control' id='password'
+                <input type='password' className='form-control' id='password'
                 name='password' value={password} placeholder='Enter your password'
                 onChange={onChange} />
 
